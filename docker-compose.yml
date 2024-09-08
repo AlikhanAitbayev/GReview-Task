@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+  db:
+    env_file: .env
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    volumes:
+      - database_volume:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+
+volumes:
+  database_volume:
