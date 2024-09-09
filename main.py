@@ -4,6 +4,11 @@ import os
 from flask_migrate import Migrate
 from sqlalchemy import text
 from app.routes.auth import auth_blueprint
+from flask_admin.contrib.sqla import ModelView
+from wtforms import StringField
+from flask_admin import Admin, AdminIndexView, expose
+
+from app.models import Users, Groups, Resource
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"]=os.getenv("DATABASE_URL")
@@ -12,9 +17,37 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 bcrypt.init_app(app)
+app.app_context().push()
 migrate = Migrate(app, db)
 
 app.register_blueprint(auth_blueprint)
+
+def admin_page_creation(app):
+    from flask_wtf import FlaskForm
+    from wtforms import SelectField, DateField
+    from wtforms.validators import DataRequired
+       
+    
+    class UserAdminView(ModelView):
+        
+        column_list = ['id', 'username', 'email', 'password_hash', 'groups']
+        def on_model_change(self, form, model, is_created):
+            model.set_password(model.password_hash)
+
+    class GroupAdminView(ModelView):
+        column_hide_backrefs = False
+        column_list = ['id', 'name', 'users_list']
+        
+
+    admin = Admin(app, name='Manager', template_mode='bootstrap3')
+    admin.add_view(UserAdminView(Users, db.session))
+    admin.add_view(GroupAdminView(Groups, db.session))
+    admin.add_view(ModelView(Resource, db.session))
+
+admin_page_creation(app)
+# admin.add_view(ModelView(Users, db.session))
+# admin.add_view(ModelView(Groups, db.session))
+# admin.add_view(ModelView(Resource, db.session))
 
 with app.app_context():
     try:

@@ -1,7 +1,7 @@
 import jwt
 import datetime
 from flask import current_app
-from app.models import User
+from app.models import Users
 
 def encode_auth_token(user_id):
     try:

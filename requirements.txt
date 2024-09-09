@@ -4,6 +4,8 @@ Flask-JWT-Extended
 Flask-Bcrypt==1.0.1
 Flask-SQLAlchemy==3.1.1
 Flask-Migrate==4.0.7
+Flask-Admin
+Flask-WTF 
 psycopg2-binary
 PyJWT
 gunicorn==20.1.0
