@@ -8,7 +8,7 @@ from flask_admin.contrib.sqla import ModelView
 from wtforms import StringField
 from flask_admin import Admin, AdminIndexView, expose
 
-from app.models import Users, Groups, Resource
+from app.models import Users, Groups, Resource, Permissions, Reservations
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"]=os.getenv("DATABASE_URL")
@@ -30,28 +30,27 @@ def admin_page_creation(app):
     
     class UserAdminView(ModelView):
         
-        column_list = ['id', 'username', 'email', 'password_hash', 'groups']
+        column_list = ["id", "username", "email", "password_hash", "groups", "reservations"]
         def on_model_change(self, form, model, is_created):
             model.set_password(model.password_hash)
 
     class GroupAdminView(ModelView):
         column_hide_backrefs = False
-        column_list = ['id', 'name', 'users_list']
+        column_list = ["id", "name", "users", "permissions"]
         
 
-    admin = Admin(app, name='Manager', template_mode='bootstrap3')
+    admin = Admin(app, name="Manager", template_mode="bootstrap3")
     admin.add_view(UserAdminView(Users, db.session))
     admin.add_view(GroupAdminView(Groups, db.session))
     admin.add_view(ModelView(Resource, db.session))
+    admin.add_view(ModelView(Permissions, db.session))
+    admin.add_view(ModelView(Reservations, db.session))
 
 admin_page_creation(app)
-# admin.add_view(ModelView(Users, db.session))
-# admin.add_view(ModelView(Groups, db.session))
-# admin.add_view(ModelView(Resource, db.session))
 
 with app.app_context():
     try:
-        result = db.session.execute(text('SELECT 1'))
+        result = db.session.execute(text("SELECT 1"))
         print("Database connection successful:", result)
 
         db.create_all()
@@ -59,4 +58,4 @@ with app.app_context():
         print("Error connecting to the database:", e)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)
