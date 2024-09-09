@@ -4,6 +4,8 @@ import os
 from flask_migrate import Migrate
 from sqlalchemy import text
 from app.routes.auth import auth_blueprint
+from app.routes.resources import resources_blueprint
+from app.routes.reservations import reservations_blueprint
 from flask_admin.contrib.sqla import ModelView
 from wtforms import StringField
 from flask_admin import Admin, AdminIndexView, expose
@@ -21,6 +23,8 @@ app.app_context().push()
 migrate = Migrate(app, db)
 
 app.register_blueprint(auth_blueprint)
+app.register_blueprint(resources_blueprint)
+app.register_blueprint(reservations_blueprint)
 
 def admin_page_creation(app):
     from flask_wtf import FlaskForm
@@ -44,7 +48,7 @@ def admin_page_creation(app):
     admin.add_view(GroupAdminView(Groups, db.session))
     admin.add_view(ModelView(Resource, db.session))
     admin.add_view(ModelView(Permissions, db.session))
-    admin.add_view(ModelView(Reservations, db.session))
+    admin.add_view(ModelView(Reservations, db.session, endpoint="admin_reservations"))
 
 admin_page_creation(app)
 
