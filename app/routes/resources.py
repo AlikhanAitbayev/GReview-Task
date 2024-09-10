@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify
-from app.models import Resource, Permissions, db
-from app.services.auth_service import token_required, permission_collector
+from flask import Blueprint, jsonify
+from app.models import Resource
+from app.services.auth_service import token_required
 
 resources_blueprint = Blueprint("resources", __name__)
 

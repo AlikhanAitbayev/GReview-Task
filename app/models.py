@@ -60,9 +60,14 @@ class Resource(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255))
     capacity = db.Column(db.Integer, nullable=False)
-    schedule = db.Column(db.String(255), nullable=True)
+    # schedule = db.Column(db.String(255), nullable=True)
+    available_start_time = db.Column(db.DateTime, nullable=False)
+    available_end_time = db.Column(db.DateTime, nullable=False) 
     permissions = db.relationship('Permissions', secondary=ResourcePermissions, back_populates='resources')
     reservations = db.relationship('Reservations', back_populates='resource')
+
+    def is_available_schedule(self, start_time, end_time):
+        return (start_time >= self.available_start_time and end_time <= self.available_end_time)
 
 class Reservations(db.Model):
     id = db.Column(db.Integer, primary_key=True)

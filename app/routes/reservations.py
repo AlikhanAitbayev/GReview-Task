@@ -35,11 +35,15 @@ def create_reservation(current_user, user_permissions):
     resource_permissions = set([perm.name for perm in resource.permissions])
     if not (resource_permissions & user_permissions):
         return jsonify({'message': 'Permission denied!'}), 403
+    
+    if not resource.is_available_schedule(start_time, end_time):
+        return jsonify({'message': 'Resource is not available during the requested time.'}), 400
 
     existing_reservations = Reservations.query.filter_by(resource_id=resource_id).filter(
         Reservations.start_time < end_time,
         Reservations.end_time > start_time
     ).count()
+
     if existing_reservations >= resource.capacity:
         return jsonify({'message': 'Resource capacity exceeded for the selected time slot'}), 400
     

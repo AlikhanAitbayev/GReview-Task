@@ -52,7 +52,5 @@ def permission_collector(func):
         user_permissions.update([perm.name for perm in current_user.permissions])
         for group in current_user.groups:
             user_permissions.update([perm.name for perm in group.permissions])
-        # if permission_name not in user_permissions:
-        #     return jsonify({'message': 'Permission denied!'}), 403
         return func(current_user, user_permissions, *args, **kwargs)
     return decorated_function

@@ -7,8 +7,7 @@ from app.routes.auth import auth_blueprint
 from app.routes.resources import resources_blueprint
 from app.routes.reservations import reservations_blueprint
 from flask_admin.contrib.sqla import ModelView
-from wtforms import StringField
-from flask_admin import Admin, AdminIndexView, expose
+from flask_admin import Admin
 
 from app.models import Users, Groups, Resource, Permissions, Reservations
 
@@ -26,14 +25,9 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(resources_blueprint)
 app.register_blueprint(reservations_blueprint)
 
-def admin_page_creation(app):
-    from flask_wtf import FlaskForm
-    from wtforms import SelectField, DateField
-    from wtforms.validators import DataRequired
-       
+def admin_page_creation(app):     
     
     class UserAdminView(ModelView):
-        
         column_list = ["id", "username", "email", "password_hash", "groups", "reservations"]
         def on_model_change(self, form, model, is_created):
             model.set_password(model.password_hash)
@@ -41,16 +35,18 @@ def admin_page_creation(app):
     class GroupAdminView(ModelView):
         column_hide_backrefs = False
         column_list = ["id", "name", "users", "permissions"]
+
+    class PermissionsAdminView(ModelView):
+        column_list = ["id", "name", "description", "users", "groups", "resources"]
+    
         
 
     admin = Admin(app, name="Manager", template_mode="bootstrap3")
     admin.add_view(UserAdminView(Users, db.session))
     admin.add_view(GroupAdminView(Groups, db.session))
     admin.add_view(ModelView(Resource, db.session))
-    admin.add_view(ModelView(Permissions, db.session))
+    admin.add_view(PermissionsAdminView(Permissions, db.session))
     admin.add_view(ModelView(Reservations, db.session, endpoint="admin_reservations"))
-
-admin_page_creation(app)
 
 with app.app_context():
     try:
@@ -62,4 +58,5 @@ with app.app_context():
         print("Error connecting to the database:", e)
 
 if __name__ == "__main__":
+    admin_page_creation(app)
     app.run(host="0.0.0.0", port=5000)
