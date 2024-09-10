@@ -1,11 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from app.models import Users, db
 from app.services.auth_service import encode_auth_token
 
 auth_blueprint = Blueprint("auth", __name__)
 
 @auth_blueprint.route("/auth/signup", methods=["POST"])
-def signup():
+def signup() -> Response:
     data = request.get_json()
     user = Users(username=data["username"], email=data["email"])
     user.set_password(data["password"])
@@ -15,7 +15,7 @@ def signup():
     return jsonify({"token": auth_token}), 201
 
 @auth_blueprint.route("/auth/login", methods=["POST"])
-def login():
+def login() -> Response:
     data = request.get_json()
     user = Users.query.filter_by(email=data["email"]).first()
     if user and user.check_password(data["password"]):

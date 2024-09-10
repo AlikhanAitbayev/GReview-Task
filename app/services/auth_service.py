@@ -1,10 +1,13 @@
 import jwt
 import datetime
-from flask import current_app, request, jsonify
+from flask import current_app, request, jsonify, Response
 from app.models import Users
 from functools import wraps
+from typing import Callable, Union, Any
 
-def encode_auth_token(user_id):
+FuncType = Callable[..., Any]
+
+def encode_auth_token(user_id: int) -> Union[str, Exception]:
     try:
         payload = {
             "exp": datetime.datetime.now() + datetime.timedelta(days=1),
@@ -15,7 +18,7 @@ def encode_auth_token(user_id):
     except Exception as e:
         return e
 
-def decode_auth_token(auth_token):
+def decode_auth_token(auth_token: str) -> Union[int, str]:
     try:
         payload = jwt.decode(auth_token, current_app.config.get("SECRET_KEY"), algorithms=["HS256"])
         return payload["sub"]
@@ -24,9 +27,9 @@ def decode_auth_token(auth_token):
     except jwt.InvalidTokenError:
         return "Invalid token. Please log in again"
 
-def token_required(func):
+def token_required(func: FuncType) -> FuncType:
     @wraps(func)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> Response:
         token = None
         if "Authorization" in request.headers:
             bearer = request.headers['Authorization']
@@ -43,11 +46,9 @@ def token_required(func):
     return decorated
 
 
-def permission_collector(func):
+def permission_collector(func: FuncType) -> FuncType:
     @wraps(func)
-    def decorated_function(current_user, *args, **kwargs):
-        if not isinstance(current_user, Users):
-            return jsonify({'message': 'Invalid user object supplied'}), 500
+    def decorated_function(current_user: Users, *args: Any, **kwargs: Any) -> Response:
         user_permissions = set()
         user_permissions.update([perm.name for perm in current_user.permissions])
         for group in current_user.groups:

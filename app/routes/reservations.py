@@ -1,5 +1,5 @@
-from flask import Blueprint, request, jsonify
-from app.models import Reservations, Resource, db
+from flask import Blueprint, request, jsonify, Response
+from app.models import Reservations, Resource, db, Users
 from app.services.auth_service import token_required, permission_collector
 from datetime import datetime
 
@@ -7,7 +7,7 @@ reservations_blueprint = Blueprint("reservations", __name__)
 
 @reservations_blueprint.route("/reservations", methods=["GET"])
 @token_required
-def get_resvations(current_user):
+def get_resvations(current_user: Users) -> Response:
     reservations = Reservations.query.filter_by(user_id=current_user.id).all()
     output = []
     for reservation in reservations:
@@ -25,7 +25,7 @@ def get_resvations(current_user):
 @reservations_blueprint.route("/reservations", methods=["POST"])
 @token_required
 @permission_collector
-def create_reservation(current_user, user_permissions):
+def create_reservation(current_user: Users, user_permissions: set[str]) -> Response:
     data = request.get_json()
     resource_id = data["resource_id"]
     start_time = datetime.fromisoformat(data['start_time'])
@@ -60,7 +60,7 @@ def create_reservation(current_user, user_permissions):
 
 @reservations_blueprint.route('/reservations/<int:reservation_id>', methods=['GET'])
 @token_required
-def get_reservation(current_user, reservation_id):
+def get_reservation(current_user: Users, reservation_id: int) -> Response:
     reservation = Reservations.query.get_or_404(reservation_id)
     if reservation.user_id != current_user.id:
         return jsonify({'message': 'Access denied'}), 403
@@ -76,7 +76,7 @@ def get_reservation(current_user, reservation_id):
 
 @reservations_blueprint.route('/reservations/<int:reservation_id>', methods=['DELETE'])
 @token_required
-def delete_reservation(current_user, reservation_id):
+def delete_reservation(current_user: Users, reservation_id: int) -> Response:
     reservation = Reservations.query.get_or_404(reservation_id)
     if reservation.user_id != current_user.id:
         return jsonify({'message': 'Access denied'}), 403

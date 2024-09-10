@@ -1,12 +1,13 @@
-from flask import Blueprint, jsonify
-from app.models import Resource
+from flask import Blueprint, jsonify, Response
+from app.models import Resource, Users
 from app.services.auth_service import token_required
+from typing import List, Dict, Any
 
 resources_blueprint = Blueprint("resources", __name__)
 
 @resources_blueprint.route("/resources", methods=["GET"])
 @token_required
-def get_resources(current_user):
+def get_resources(current_user: Users) -> Response:
     resources = Resource.query.all()
     output = []
     for resource in resources:
@@ -23,7 +24,7 @@ def get_resources(current_user):
 
 @resources_blueprint.route("/resources/<int>:resource_id", methods=["GET"])
 @token_required
-def get_resource(current_user, resource_id):
+def get_resource(current_user: Users, resource_id: int) -> Response:
     resource = Resource.query.get_or_404(resource_id)
     resource_data = {
         'id': resource.id,
